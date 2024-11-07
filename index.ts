@@ -3,15 +3,34 @@ const game = canvas.getContext("2d");
 const GAME_WIDTH = 1024;
 const GAME_HEIGH = 720;
 
-class Level {
-  blocks: HTMLImageElement[];
+class Block{
 
-  constructor() {
+   block: HTMLImageElement;
+   x: number;
+   y: number;
+   width: number;
+   heigth: number;
+
+   constructor(x:number,y: number,src:  string,width: number,heigth: number){
+     this.y = y;
+     this.x = x;
+     this.width = width;
+     this.heigth = heigth;
+     this.block = new Image(width,heigth);
+     this.block.src = src;
+   
+   }
+}
+
+class Level {
+  blocks: Block[];
+
+  constructor(src: string, maxBlocks: number) {
     this.blocks = [];
     for (let x = 0; x <= 10; x++) {
-      let image = new Image(128, 128);
-      image.src = "assets/spaceTile2.png";
-      this.blocks.push(image);
+       let block = new Block(x*128,GAME_HEIGH-128,
+      src,128,128);
+      this.blocks.push(block);
     }
   }
 }
@@ -32,8 +51,7 @@ class Player {
   maxSpeed: number;
   onGround: boolean = true;
   vy: number = 20;
-  weigth: number = 10;
-  maxJump: boolean = false;
+  weigth: number = 0;
 
   constructor() {
     this.x = 300;
@@ -82,14 +100,18 @@ window.onkeydown = (event) => {
     case "a": {
       player.walking = true;
       player.scale = -1;
+    }
+    break;
+    case "w": {
+      if (player.onGround) {
+        player.onGround = false;
+      }
       break;
     }
-    case "w": {
-      if(player.onGround){
-      player.onGround = false;
-      player.maxJump = false;
-      }
+    case 's': {
+      player.weigth = 50;
     }
+    break;
   }
 };
 
@@ -106,37 +128,46 @@ window.onkeyup = (e) => {
   }
 };
 
-function handleMovement(player: Player, game: CanvasRenderingContext2D | null) {
+function handleMovement(dt: number,player: Player, game: CanvasRenderingContext2D | null) {
   if (game) {
     if (player.walking && player.scale == 1) {
-      player.x += player.speed;
+      player.x += (player.speed);
     }
     if (player.walking && player.scale == -1) {
-      player.x -= player.speed;
+      player.x -= (player.speed);
     }
-    if (!player.onGround && !player.maxJump) {
+    if (!player.onGround ) {
       player.y -= player.vy;
-      if (player.y <= -20) player.maxJump = true;
-    }
+      
+           }
   }
 }
 
 function handleAnimation() {
   if (game) {
+     let x: number;
+      if(player.scale<0) {x = -(player.x + player.width);
+      }else {
+        x = player.x;
+      }
+
     if (player.walking) {
-      game.clearRect(0, 0, GAME_HEIGH, GAME_WIDTH);
+           game.clearRect(0, 0, GAME_HEIGH, GAME_WIDTH);
       let pos = Math.floor((gameFrame / stagFrames) % player.maxWalk);
+      game.save();
+      game.scale(player.scale,1);
       game.drawImage(
         player.walk[pos],
         720,
         1060,
         650,
         750,
-        player.x,
+        x,
         player.y,
         player.width,
         player.height
       );
+      game.restore();
       game.stroke();
       numWalk++;
       gameFrame++;
@@ -144,17 +175,20 @@ function handleAnimation() {
     } else {
       game.clearRect(0, 0, GAME_HEIGH, GAME_WIDTH);
       let pos = Math.floor((gameFrame / stagFrames) % player.maxIdle);
-      game.drawImage(
+    game.save();
+    game.scale(player.scale,1);
+    game.drawImage(
         player.idle[pos],
         720,
         1060,
         650,
         750,
-        player.x,
+        x,
         player.y,
         player.width,
         player.height
       );
+      game.restore();
       game.stroke();
       gameFrame++;
       numIdle++;
@@ -163,7 +197,7 @@ function handleAnimation() {
   }
 }
 
-var level = new Level();
+var level = new Level("assets/spaceTile2.png",10);
 
 function loadLevel(game: CanvasRenderingContext2D | null) {
   if (game) {
@@ -171,40 +205,64 @@ function loadLevel(game: CanvasRenderingContext2D | null) {
       let image = level.blocks[x];
       if (image) {
         game.beginPath();
-        game.drawImage(image, image?.width * x, 400);
+        game.drawImage(image.block, image.x, image.y);
         game.stroke();
       }
     }
   }
 }
 
-function applyGravity(player: Player) {
-  if (!player.onGround) {
+function applyGravity(player: Player,dt: number) {
     player.y += player.weigth;
+    player.weigth = player.weigth + 1;
   }
-}
 
 function handleCollision(player: Player, level: Level) {
   var collision: boolean = false;
   for (let x = 0; x < level.blocks.length; x++) {
     var image = level.blocks[x];
-    if (player.y + player.height >= 400) {
+    if (player.y + player.height >= image.y) {
       player.onGround = true;
+      player.weigth = 0;
       collision = true;
-      player.y = 400 - player.height;
+      player.y = image.y - player.height;
     }
   }
+   if(player.x + player.width >= GAME_WIDTH){
+        player.x = GAME_WIDTH - player.width;
+   }
+   if(player.x <= 0){
+    player.x = 0;
+   }
+
   return collision;
 }
 
-function mainLoop() {
-  game?.reset();
-  handleMovement(player, game);
+let lastTime = 0;
+let fps = 60;
+let interval = 1000/ fps;
+let acumilatedTime = 0;
+
+
+function mainLoop(timestamp) {
+  if(game){
+  game.reset();
+  }
+  let dt = timestamp - lastTime;
+  lastTime = timestamp;
+  //console.log(1 / ((performance.now() - timeElapsed) / 1000))
+  acumilatedTime += dt;
+  
+  this.time = timestamp;
+  if(acumilatedTime >= interval){
+   let deltaTime = dt/1000;
+  handleMovement(deltaTime,player, game);
   handleAnimation();
-  applyGravity(player);
+  applyGravity(player,deltaTime);
   handleCollision(player, level);
   loadLevel(game);
   requestAnimationFrame(mainLoop);
+  }
 }
 
-mainLoop();
+ requestAnimationFrame(mainLoop);
