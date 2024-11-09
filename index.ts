@@ -2,13 +2,58 @@ const canvas = document.getElementById("game") as HTMLCanvasElement;
 const game = canvas.getContext("2d");
 const GAME_WIDTH = 1024;
 const GAME_HEIGH = 720;
+let bullets:Bullet[] = []
 
 enum States {
   RUN,
   JUMPSTART,
   JUMPEND,
   IDLE,
+  FALL,
   ROLL,
+}
+
+class Bullet{
+  asset: HTMLImageElement;
+  size: {
+    width: number;
+    heidth: number
+  };
+  velocity: number;
+  position: Vector2D;
+  endPosition: Vector2D;
+  constructor(src: string,  position: Vector2D){
+    this.asset = new Image(60,60);
+    this.velocity = 10;
+    this.endPosition = new Vector2D(position.x + 60,position.y); 
+    this.asset.src = src;
+    this.size= {
+      width: 128,
+
+      heidth: 131
+    }
+    this.position = position;
+  }
+}
+
+class Weapon{
+  asset: HTMLImageElement;
+  size: {
+    width: number,
+    heigth: number
+  };
+  position: Vector2D;
+
+  constructor(src: string, size: { width: number, heidth: number}, position: Vector2D){
+    this.asset = new Image(size.width,size.heidth);
+    this.position = position;
+    this.size = {
+      width: size.width,
+      heigth: size.heidth
+   }
+   this.asset.src = src;
+  }
+
 }
 
 class PlayerAnimation {
@@ -71,7 +116,7 @@ class Level {
     position: Vector2D;
   };
 
-  constructor(src: string, maxBlocks: number) {
+  constructor(src: string ) {
     this.blocks = [];
     for (let x = 0; x <= 10; x++) {
       let block = new Block(x * 128, GAME_HEIGH - 128, src, 128, 128);
@@ -94,12 +139,7 @@ class Player {
   width: number;
   height: number;
   animations: Map<States, PlayerAnimation>;
-  idle: HTMLImageElement[];
-  walk: HTMLImageElement[];
-  maxIdle: number = 5;
-  maxWalk: number = 7;
   walking: boolean;
-  keys: string[];
   scale: number = 1;
   speed: number = 6;
   maxSpeed: number;
@@ -114,13 +154,10 @@ class Player {
     this.maxSpeed = 100;
     this.width = 100;
     this.height = 110;
-    this.idle = [];
-    this.walk = [];
     this.walking = false;
-    this.keys = [];
     this.state = States.IDLE;
 
-    this.animations = new Map<States,PlayerAnimation>();
+    this.animations = new Map<States, PlayerAnimation>();
     this.animations.set(
       States.IDLE,
       new PlayerAnimation(5, "assets/Char 2/with hands/idle_")
@@ -129,10 +166,22 @@ class Player {
       States.RUN,
       new PlayerAnimation(7, "assets/Char 2/with hands/walk_")
     );
-    this.animations.set(States.JUMPSTART,new PlayerAnimation(1,"assets/Char 2/with hands/jumpStart_"));
-    this.animations.set(States.JUMPEND,new PlayerAnimation(2,"assets/Char 2/with hands/jumpEnd_"));
-    this.animations.set(States.ROLL,new PlayerAnimation(4,"assets/Char 2/with hands/fall_"));
-    this.animations.set(States.ROLL,new PlayerAnimation(4,"assets/Char 2/with hands/roll_"));
+    this.animations.set(
+      States.JUMPSTART,
+      new PlayerAnimation(1, "assets/Char 2/with hands/jumpStart_")
+    );
+    this.animations.set(
+      States.JUMPEND,
+      new PlayerAnimation(2, "assets/Char 2/with hands/jumpEnd_")
+    );
+    this.animations.set(
+      States.FALL,
+      new PlayerAnimation(4, "assets/Char 2/with hands/fall_")
+    );
+    this.animations.set(
+      States.ROLL,
+      new PlayerAnimation(4, "assets/Char 2/with hands/roll_")
+    );
   }
 }
 var player = new Player();
@@ -145,22 +194,25 @@ if (game) {
   console.log("Now working dude");
 }
 
-let numIdle = 0;
-let numWalk = 0;
 let gameFrame = 0;
 let stagFrames = 6;
 window.onkeydown = (event) => {
   switch (event.key) {
     case "d": {
       player.walking = true;
-      player.state = States.RUN;
-      player.scale = 1;
+       if(player.state !== States.JUMPSTART && player.state !== States.ROLL) {
+        player.state = States.RUN;
+        }
+        player.scale = 1;
       break;
     }
     case "a":
       {
         player.walking = true;
+       
+       if(player.state !== States.JUMPSTART && player.state !== States.ROLL) {
         player.state = States.RUN;
+        }
         player.scale = -1;
       }
       break;
@@ -177,8 +229,14 @@ window.onkeydown = (event) => {
         player.state = States.ROLL;
       }
       break;
+  
+  case " ":
+    { 
+      let img = new Bullet('assets/bullet.png',new Vector2D((weapon.position.x+85)*player.scale ,weapon.position.y+12));
+      bullets.push(img);
+    }
   }
-};
+  };
 
 window.onkeyup = (e) => {
   switch (e.key) {
@@ -200,16 +258,14 @@ window.onkeyup = (e) => {
   }
 };
 
-function handleMovement(
-  dt: number,
-  player: Player,
-  game: CanvasRenderingContext2D | null
-) {
+function handleMovement(player: Player, game: CanvasRenderingContext2D | null) {
   if (game) {
     if (player.walking && player.scale == 1) {
+      player.state = player.state === States.ROLL ? States.ROLL : States.RUN;
       player.x += player.speed;
     }
     if (player.walking && player.scale == -1) {
+      player.state = player.state === States.ROLL ? States.ROLL : States.RUN;
       player.x -= player.speed;
     }
     if (!player.onGround) {
@@ -229,38 +285,55 @@ function handleAnimation() {
 
     switch (player.state) {
       case States.RUN: {
-        drawAnimation(States.RUN,game,x);
+        drawAnimation(States.RUN, game, x);
         break;
       }
 
-      case States.JUMPSTART:{
-        drawAnimation(States.JUMPSTART,game,x);
+      case States.JUMPSTART: {
+        drawAnimation(States.JUMPSTART, game, x);
         break;
       }
       case States.JUMPEND: {
-        drawAnimation(States.JUMPEND,game,x);
+        drawAnimation(States.JUMPEND, game, x);
         player.state = States.IDLE;
         break;
       }
       case States.IDLE: {
-       drawAnimation(States.IDLE,game,x);        
-     break;  
-    } 
+        drawAnimation(States.IDLE, game, x);
+        break;
+      }
+      case States.FALL: {
+        drawAnimation(States.FALL,game,x);
+        break;
+      }
       case States.ROLL: {
-        drawAnimation(States.ROLL,game,x);
+        drawAnimation(States.ROLL, game, x);
         break;
       }
     }
   }
 }
 
-function drawAnimation(state: States,game: CanvasRenderingContext2D,x:number){
-let idleAnim = player.animations.get(state);
-        if(idleAnim){
-       
-          let pos = Math.floor((gameFrame / stagFrames) % idleAnim.frames);
-          
-          if(idleAnim.images[pos]){
+function drawBullets()
+{
+ bullets.forEach((bullet,index) => {
+  bullet.position.x+= bullet.velocity;
+  game?.drawImage(bullet.asset,0,0,bullet.size.width,bullet.size.heidth,bullet.position.x,bullet.position.y,10,10);
+ })
+  
+
+}
+
+function drawAnimation(
+  state: States,
+  game: CanvasRenderingContext2D,
+  x: number
+) {
+  let idleAnim = player.animations.get(state);
+  if (idleAnim) {
+    let pos = Math.floor((gameFrame / stagFrames) % idleAnim.frames);
+
+    if (idleAnim.images[pos]) {
       game.save();
       game.scale(player.scale, 1);
       game.drawImage(
@@ -282,7 +355,8 @@ let idleAnim = player.animations.get(state);
   }
 }
 
-var level = new Level("assets/spaceTile2.png", 10);
+var level = new Level("assets/spaceTile2.png");
+;
 
 function loadLevel(game: CanvasRenderingContext2D | null) {
   if (game) {
@@ -298,7 +372,9 @@ function loadLevel(game: CanvasRenderingContext2D | null) {
   }
 }
 
-function applyGravity(player: Player, dt: number) {
+function applyGravity(player: Player) {
+ 
+  if (player.weigth > player.vy && player.state !== States.ROLL) player.state = States.FALL;
   player.y += player.weigth;
   player.weigth = player.weigth + 1;
 }
@@ -312,7 +388,7 @@ function handleCollision(player: Player, level: Level) {
       player.weigth = 0;
       collision = true;
       player.y = image.y - player.height;
-      if(player.state === States.JUMPSTART) player.state = States.JUMPEND;
+      if(player.state === States.FALL) player.state = States.IDLE;
     }
   }
   if (player.x + player.width >= GAME_WIDTH) {
@@ -324,31 +400,44 @@ function handleCollision(player: Player, level: Level) {
 
   return collision;
 }
+ 
+let weapon = new Weapon('assets/test2.png',{width: 128,heidth:128},new Vector2D(300,400));
+
+function drawWeapon(){
+  game?.save();
+  game?.scale(player.scale,1);
+  weapon.position.x  = (player.x + player.width/2)*player.scale;
+weapon.position.x -=25;
+  weapon.position.y = (player.y + player.height/2);
+    game?.drawImage(weapon.asset,weapon.position.x,weapon.position.y );
+    game?.restore()
+}
 
 let lastTime = 0;
 let fps = 60;
 let interval = 1000 / fps;
 let acumilatedTime = 0;
 
-function mainLoop(timestamp : number) {
+function mainLoop(timestamp: number) {
   if (game) {
     game.reset();
   }
   let dt = timestamp - lastTime;
   lastTime = timestamp;
-  //console.log(1 / ((performance.now() - timeElapsed) / 1000))
   acumilatedTime += dt;
 
   this.time = timestamp;
   if (acumilatedTime >= interval) {
-    let deltaTime = dt / 1000;
-    handleMovement(deltaTime, player, game);
-    applyGravity(player, deltaTime);
+    //let deltaTime = dt / 1000;
+    handleMovement(player, game);
+    applyGravity(player);
     handleCollision(player, level);
 
     loadLevel(game);
-
     handleAnimation();
+    
+    drawWeapon();
+    drawBullets();
     requestAnimationFrame(mainLoop);
   }
 }
