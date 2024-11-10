@@ -1,8 +1,9 @@
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const game = canvas.getContext("2d");
-const GAME_WIDTH = 1024;
+
+const GAME_WIDTH = 1900 ;
 const GAME_HEIGH = 720;
-let bullets:Bullet[] = []
+let bullets: Bullet[] = [];
 
 enum States {
   RUN,
@@ -13,47 +14,52 @@ enum States {
   ROLL,
 }
 
-class Bullet{
+class Bullet {
   asset: HTMLImageElement;
   size: {
     width: number;
-    heidth: number
+    heidth: number;
   };
   velocity: number;
   position: Vector2D;
-  endPosition: Vector2D;
-  constructor(src: string,  position: Vector2D){
-    this.asset = new Image(60,60);
+  end: number;
+  isFirstShot: boolean;
+  constructor(src: string, position: Vector2D) {
+    this.asset = new Image(60, 60);
     this.velocity = 10;
-    this.endPosition = new Vector2D(position.x + 60,position.y); 
+    this.end = 0;
+    this.isFirstShot = true;
     this.asset.src = src;
-    this.size= {
+    this.size = {
       width: 128,
 
-      heidth: 131
-    }
+      heidth: 131,
+    };
     this.position = position;
   }
 }
 
-class Weapon{
+class Assets {
   asset: HTMLImageElement;
   size: {
-    width: number,
-    heigth: number
+    width: number;
+    heigth: number;
   };
   position: Vector2D;
 
-  constructor(src: string, size: { width: number, heidth: number}, position: Vector2D){
-    this.asset = new Image(size.width,size.heidth);
+  constructor(
+    src: string,
+    size: { width: number; heidth: number },
+    position: Vector2D
+  ) {
+    this.asset = new Image(size.width, size.heidth);
     this.position = position;
     this.size = {
       width: size.width,
-      heigth: size.heidth
-   }
-   this.asset.src = src;
+      heigth: size.heidth,
+    };
+    this.asset.src = src;
   }
-
 }
 
 class PlayerAnimation {
@@ -74,29 +80,6 @@ class PlayerAnimation {
   }
 }
 
-class Block {
-  block: HTMLImageElement;
-  x: number;
-  y: number;
-  width: number;
-  heigth: number;
-
-  constructor(
-    x: number,
-    y: number,
-    src: string,
-    width: number,
-    heigth: number
-  ) {
-    this.y = y;
-    this.x = x;
-    this.width = width;
-    this.heigth = heigth;
-    this.block = new Image(width, heigth);
-    this.block.src = src;
-  }
-}
-
 class Vector2D {
   x: number;
   y: number;
@@ -108,7 +91,7 @@ class Vector2D {
 }
 
 class Level {
-  blocks: Block[];
+  blocks: Assets[];
   background_image: {
     img: HTMLImageElement;
     width: number;
@@ -116,10 +99,10 @@ class Level {
     position: Vector2D;
   };
 
-  constructor(src: string ) {
+  constructor(src: string) {
     this.blocks = [];
     for (let x = 0; x <= 10; x++) {
-      let block = new Block(x * 128, GAME_HEIGH - 128, src, 128, 128);
+      let block = new Assets(src, {width:128, heidth:128},new Vector2D(x * 128, GAME_HEIGH - 128));
       this.blocks.push(block);
     }
 
@@ -200,18 +183,18 @@ window.onkeydown = (event) => {
   switch (event.key) {
     case "d": {
       player.walking = true;
-       if(player.state !== States.JUMPSTART && player.state !== States.ROLL) {
+      if (player.state !== States.JUMPSTART && player.state !== States.ROLL) {
         player.state = States.RUN;
-        }
-        player.scale = 1;
+      }
+      player.scale = 1;
       break;
     }
     case "a":
       {
         player.walking = true;
-       
-       if(player.state !== States.JUMPSTART && player.state !== States.ROLL) {
-        player.state = States.RUN;
+
+        if (player.state !== States.JUMPSTART && player.state !== States.ROLL) {
+          player.state = States.RUN;
         }
         player.scale = -1;
       }
@@ -229,14 +212,20 @@ window.onkeydown = (event) => {
         player.state = States.ROLL;
       }
       break;
-  
-  case " ":
-    { 
-      let img = new Bullet('assets/bullet.png',new Vector2D((weapon.position.x+85)*player.scale ,weapon.position.y+12));
+
+    case " ": {
+      let img = new Bullet(
+        "assets/bullet.png",
+        new Vector2D(
+          (weapon.position.x + 105) * player.scale,
+          weapon.position.y + 12
+        )
+      );
+      img.velocity *= player.scale;
       bullets.push(img);
     }
   }
-  };
+};
 
 window.onkeyup = (e) => {
   switch (e.key) {
@@ -303,7 +292,7 @@ function handleAnimation() {
         break;
       }
       case States.FALL: {
-        drawAnimation(States.FALL,game,x);
+        drawAnimation(States.FALL, game, x);
         break;
       }
       case States.ROLL: {
@@ -314,14 +303,34 @@ function handleAnimation() {
   }
 }
 
-function drawBullets()
-{
- bullets.forEach((bullet,index) => {
-  bullet.position.x+= bullet.velocity;
-  game?.drawImage(bullet.asset,0,0,bullet.size.width,bullet.size.heidth,bullet.position.x,bullet.position.y,10,10);
- })
-  
-
+function drawBullets() {
+  bullets.forEach((bullet, index) => {
+    if (bullet.end >= 550) {
+      bullets.splice(index, 1);
+    } else {
+      if(bullet.isFirstShot){
+        let firshot = new Assets('assets/muzzle.png',{width:128,heidth:128},bullet.position);
+        game?.save()
+        game?.scale(player.scale,1);
+        game?.drawImage(firshot.asset,0,0,bullet.size.width,bullet.size.heidth,(bullet.position.x+12)*player.scale,bullet.position.y - 17,64,64);
+        bullet.isFirstShot = false;
+        game?.restore();
+      }
+      bullet.position.x += bullet.velocity;
+      bullet.end += 10;
+      game?.drawImage(
+        bullet.asset,
+        0,
+        0,
+        bullet.size.width,
+        bullet.size.heidth,
+        bullet.position.x,
+        bullet.position.y,
+        10,
+        10
+      );
+    }
+  });
 }
 
 function drawAnimation(
@@ -356,8 +365,6 @@ function drawAnimation(
 }
 
 var level = new Level("assets/spaceTile2.png");
-;
-
 function loadLevel(game: CanvasRenderingContext2D | null) {
   if (game) {
     game.drawImage(level.background_image.img, 0, 0);
@@ -365,7 +372,7 @@ function loadLevel(game: CanvasRenderingContext2D | null) {
       let image = level.blocks[x];
       if (image) {
         game.beginPath();
-        game.drawImage(image.block, image.x, image.y);
+        game.drawImage(image.asset, image.position.x, image.position.y);
         game.stroke();
       }
     }
@@ -373,8 +380,8 @@ function loadLevel(game: CanvasRenderingContext2D | null) {
 }
 
 function applyGravity(player: Player) {
- 
-  if (player.weigth > player.vy && player.state !== States.ROLL) player.state = States.FALL;
+  if (player.weigth > player.vy && player.state !== States.ROLL)
+    player.state = States.FALL;
   player.y += player.weigth;
   player.weigth = player.weigth + 1;
 }
@@ -383,12 +390,12 @@ function handleCollision(player: Player, level: Level) {
   var collision: boolean = false;
   for (let x = 0; x < level.blocks.length; x++) {
     var image = level.blocks[x];
-    if (image && player.y + player.height >= image.y) {
+    if (image && player.y + player.height >= image.position.y && player.x + player.width <= image.position.x + image.size.width/2) {
       player.onGround = true;
       player.weigth = 0;
       collision = true;
-      player.y = image.y - player.height;
-      if(player.state === States.FALL) player.state = States.IDLE;
+      player.y = image.position.y - player.height;
+      if (player.state === States.FALL) player.state = States.IDLE;
     }
   }
   if (player.x + player.width >= GAME_WIDTH) {
@@ -400,17 +407,21 @@ function handleCollision(player: Player, level: Level) {
 
   return collision;
 }
- 
-let weapon = new Weapon('assets/test2.png',{width: 128,heidth:128},new Vector2D(300,400));
 
-function drawWeapon(){
+let weapon = new Assets(
+  "assets/test2.png",
+  { width: 128, heidth: 128 },
+  new Vector2D(300, 400)
+);
+
+function drawWeapon() {
   game?.save();
-  game?.scale(player.scale,1);
-  weapon.position.x  = (player.x + player.width/2)*player.scale;
-weapon.position.x -=25;
-  weapon.position.y = (player.y + player.height/2);
-    game?.drawImage(weapon.asset,weapon.position.x,weapon.position.y );
-    game?.restore()
+  game?.scale(player.scale, 1);
+  weapon.position.x = (player.x + player.width / 2) * player.scale;
+  weapon.position.x -= 25;
+  weapon.position.y = player.y + player.height / 2;
+  game?.drawImage(weapon.asset, weapon.position.x, weapon.position.y);
+  game?.restore();
 }
 
 let lastTime = 0;
@@ -432,10 +443,8 @@ function mainLoop(timestamp: number) {
     handleMovement(player, game);
     applyGravity(player);
     handleCollision(player, level);
-
     loadLevel(game);
     handleAnimation();
-    
     drawWeapon();
     drawBullets();
     requestAnimationFrame(mainLoop);
