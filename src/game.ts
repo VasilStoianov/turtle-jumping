@@ -1,266 +1,31 @@
+import  {Enemy}  from "./Enemy.js";
+import { Bullet } from "./bullet.js";
+import { Player } from "./player.js";
+import { Assets } from "./assets.js";
+import { Vector2D } from "./vector2d.js";
+import { States } from "./states.js";
+import { Level } from "./level.js";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const game = canvas.getContext("2d");
 let addBullet: boolean = true;
-const GAME_WIDTH = 1900;
-const GAME_HEIGH = 720;
+export const GAME_WIDTH = 1900;
+export const GAME_HEIGH = 720;
 let bullets: Bullet[] = [];
 let enemies: Enemy[] = [];
-enum States {
-  RUN,
-  JUMPSTART,
-  JUMPEND,
-  IDLE,
-  FALL,
-  ROLL,
-  HIT,
-  DEATH,
-}
-
-class Enemy {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  animations: Map<States, PlayerAnimation>;
-  scale: number = -1;
-  healtBar: {
-    width: number;
-    heidth: number;
-  };
-  speed: number = 6;
-  maxSpeed: number;
-  onGround: boolean = true;
-  vy: number = 1;
-  weigth: number = 0;
-  state: States;
-  health: number = 100;
-  isDead: boolean;
-  forRemoval: boolean = false;
-  constructor() {
-    this.isDead = false;
-    let rand = Math.random() * (3 - 1 + 1) + 1;
-    this.x = GAME_WIDTH - 200;
-    this.vy *= Math.floor(rand);
-    this.y = 255;
-    this.maxSpeed = 100;
-    this.width = 100;
-    this.height = 110;
-    this.state = States.RUN;
-
-    this.healtBar = {
-      width: 100,
-      heidth: 7,
-    };
-
-    this.animations = new Map<States, PlayerAnimation>();
-    this.animations.set(
-      States.RUN,
-      new PlayerAnimation(7, "assets/Enemies/Enemy 1/walk_")
-    );
-    this.animations.set(
-      States.HIT,
-      new PlayerAnimation(2, "assets/Enemies/Enemy 1/hit_")
-    );
-    this.animations.set(
-      States.DEATH,
-      new PlayerAnimation(9, "assets/Enemies/Enemy 1/death_")
-    );
-  }
-}
-
-class Bullet {
-  asset: HTMLImageElement;
-  size: {
-    width: number;
-    heidth: number;
-  };
-  velocity: number;
-  position: Vector2D;
-  end: number;
-  isFirstShot: boolean;
-  constructor(src: string, position: Vector2D) {
-    this.asset = new Image(60, 60);
-    this.velocity = 10;
-    this.end = 0;
-    this.isFirstShot = true;
-    this.asset.src = src;
-    this.size = {
-      width: 128,
-
-      heidth: 131,
-    };
-    this.position = position;
-  }
-}
-
-class Assets {
-  asset: HTMLImageElement;
-  size: {
-    width: number;
-    heigth: number;
-  };
-  position: Vector2D;
-
-  constructor(
-    src: string,
-    size: { width: number; heidth: number },
-    position: Vector2D
-  ) {
-    this.asset = new Image(size.width, size.heidth);
-    this.position = position;
-    this.size = {
-      width: size.width,
-      heigth: size.heidth,
-    };
-    this.asset.src = src;
-  }
-}
-
-class PlayerAnimation {
-  frames: number;
-  images: HTMLImageElement[];
-  src: string;
-  currentFrame: number;
-
-  constructor(frames: number, src: string) {
-    this.images = [];
-    this.frames = frames;
-    for (let x = 0; x <= frames; x++) {
-      let img = new Image();
-      img.src = src + x + ".png";
-      this.images.push(img);
-    }
-    this.currentFrame = 0;
-  }
-}
-
-class Vector2D {
-  x: number;
-  y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-class Level {
-  blocks: Assets[];
-  background_image: {
-    img: HTMLImageElement;
-    width: number;
-    heidth: number;
-    position: Vector2D;
-  };
-
-  constructor(src: string) {
-    this.blocks = [];
-    for (let x = 0; x <= GAME_WIDTH / 128; x++) {
-      let block = new Assets(
-        src,
-        { width: 128, heidth: 128 },
-        new Vector2D(x * 128, GAME_HEIGH - 128)
-      );
-      this.blocks.push(block);
-    }
-
-    this.background_image = {
-      img: new Image(GAME_WIDTH, GAME_HEIGH),
-      width: GAME_WIDTH,
-      heidth: GAME_HEIGH,
-      position: new Vector2D(0, 0),
-    };
-    this.background_image.img.src = "assets/background/bglayer0.png";
-  }
-}
-
-class Player {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  animations: Map<States, PlayerAnimation>;
-  walking: boolean;
-  scale: number = 1;
-  keys: Set<String>;
-  speed: number = 6;
-healtBar: {
-    width: number;
-    heidth: number;
-  };
-
-  health: number;
-  onGround: boolean = true;
-  vy: number = 20;
-  weigth: number = 0;
-  state: States;
-  isDead: boolean;
-  constructor() {
-    this.keys = new Set();
-    this.isDead = false;
-    this.x = 300;
-    this.y = 255;
-    this.healtBar = {
-      width: 100,
-      heidth: 7
-    }
-    this.health = 100;
-    this.width = 100;
-    this.height = 110;
-    this.walking = false;
-    this.state = States.IDLE;
-
-    this.animations = new Map<States, PlayerAnimation>();
-    this.animations.set(
-      States.IDLE,
-      new PlayerAnimation(5, "assets/Char 2/with hands/idle_")
-    );
-    this.animations.set(
-      States.RUN,
-      new PlayerAnimation(7, "assets/Char 2/with hands/walk_")
-    );
-    this.animations.set(
-      States.JUMPSTART,
-      new PlayerAnimation(1, "assets/Char 2/with hands/jumpStart_")
-    );
-    this.animations.set(
-      States.JUMPEND,
-      new PlayerAnimation(2, "assets/Char 2/with hands/jumpEnd_")
-    );
-    this.animations.set(
-      States.FALL,
-      new PlayerAnimation(4, "assets/Char 2/with hands/fall_")
-    );
-    this.animations.set(
-      States.ROLL,
-      new PlayerAnimation(4, "assets/Char 2/with hands/roll_")
-    );
-    this.animations.set(States.HIT,
-    new PlayerAnimation(2,"assets/Char 2/with hands/hit_"));
-  }
-}
 var player = new Player();
-
-if (game) {
-  game.fillStyle = "gray";
-  game.fillRect(0, 0, GAME_WIDTH, GAME_HEIGH);
-  game.stroke();
-} else {
-  console.log("Now working dude");
-}
-
 let gameFrame = 0;
 let stagFrames = 7;
-window.onkeydown = (event) => {
-  player.keys.add(event.key);
-};
-
+var level = new Level("assets/spaceTile2.png");
 const ArrowRight: string = "ArrowRight";
 const ArrowLeft: string = "ArrowLeft";
 const ArrowUp: string = "ArrowUp";
 const ArrowDown: string = "Arrowdown";
 const space: string = " ";
+
+window.onkeydown = (event) => {
+  player.keys.add(event.key);
+};
 
 function handleKeyEvents() {
   if (player.keys.has(ArrowRight)) {
@@ -401,12 +166,11 @@ function handleEnemyAnimation(enemies: Enemy[]) {
       }
     } else {
       enemies.splice(index, 1);
-      console.log(enemies);
     }
   });
 }
 
-function handleAnimation() {
+function handleAnimation(player: Player) {
   if (game) {
     let x: number;
     if (player.scale < 0) {
@@ -417,33 +181,33 @@ function handleAnimation() {
 
     switch (player.state) {
       case States.RUN: {
-        drawAnimation(States.RUN, game, x);
+        drawPlayer(States.RUN, game,player,x);
         break;
       }
 
       case States.JUMPSTART: {
-        drawAnimation(States.JUMPSTART, game, x);
+        drawPlayer(States.JUMPSTART, game,player, x);
         break;
       }
       case States.JUMPEND: {
-        drawAnimation(States.JUMPEND, game, x);
+        drawPlayer(States.JUMPEND, game,player, x);
         player.state = States.IDLE;
         break;
       }
       case States.IDLE: {
-        drawAnimation(States.IDLE, game, x);
+       drawPlayer(States.IDLE, game,player, x);
         break;
       }
       case States.FALL: {
-        drawAnimation(States.FALL, game, x);
+        drawPlayer(States.FALL, game, player,x);
         break;
       }
       case States.ROLL: {
-        drawAnimation(States.ROLL, game, x);
+        drawPlayer(States.ROLL, game,player, x);
         break;
       }
       case States.HIT: {
-        drawAnimation(States.HIT,game,x);
+        drawPlayer(States.HIT,game,player,x);
       }
     }
   }
@@ -509,9 +273,10 @@ function drawEnemy(
   let idleAnim = enemy.animations.get(state);
   if (idleAnim) {
     let pos = Math.floor((gameFrame / stagFrames) % idleAnim.frames);
-    if (idleAnim.images[pos]) {
+    let img = idleAnim.images[pos];
+    if (img) {
       game.drawImage(
-        idleAnim.images[pos],
+        img,
         720,
         980,
         650,
@@ -538,9 +303,10 @@ function drawEnemy(
     }
   }
 }
-function drawAnimation(
+function drawPlayer(
   state: States,
   game: CanvasRenderingContext2D,
+  player: Player,
   x: number
 ) {
   let idleAnim = player.animations.get(state);
@@ -551,12 +317,13 @@ function drawAnimation(
     game.fillText("Health:", 100,50);
     game.fillStyle = 'red';
     game.fillText(player.health.toString(),175,50);
-    if (idleAnim.images[pos]) {
+    let img = idleAnim.images[pos];
+    if (img) {
       game.save();
       game.scale(player.scale, 1);
     
       game.drawImage(
-        idleAnim.images[pos],
+        img,
         720,
         1060,
         650,
@@ -582,7 +349,6 @@ function drawAnimation(
   }
 }
 
-var level = new Level("assets/spaceTile2.png");
 function loadLevel(game: CanvasRenderingContext2D | null) {
   if (game) {
     game.drawImage(level.background_image.img, 0, 0);
@@ -644,8 +410,10 @@ function handleCollisionEnemy(enemy: Enemy, level: Level,player: Player,timeCol:
        
         bullets.splice(x, 1);
         enemy.state = States.HIT;
-        enemy.healtBar.width -= 10;
-        if (enemy.healtBar.width <= 0) enemy.state = States.DEATH;
+        enemy.health -= 8;
+        enemy.healtBar.width -= 8;
+        console.log(enemy.healtBar.width);
+        if (enemy.health <= 0) enemy.state = States.DEATH;
       }
     }
   }
@@ -717,16 +485,14 @@ function drawWeapon() {
   game?.restore();
 }
 
-let time = performance.now();
+let time =performance.now();
 let bulletTime = performance.now();
 let hitTime = performance.now();
-let enemiesToAdd = true;
+//let enemiesToAdd = true;
 let enemiesCreated = 0;
 let timeCol = false;
 function mainLoop(timestamp: number) {
-  if (game) {
-    game.reset();
-  }
+  
 
   if (player.isDead && game) {
     loadLevel(game);
@@ -762,7 +528,7 @@ function mainLoop(timestamp: number) {
       handleCollisionEnemy(enemy, level,player,timeCol);
     });
     loadLevel(game);
-    handleAnimation();
+    handleAnimation(player);
     drawWeapon();
     drawBullets();
     handleEnemyAnimation(enemies);
