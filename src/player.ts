@@ -39,29 +39,29 @@ healtBar: {
     this.animations = new Map<States, PlayerAnimation>();
     this.animations.set(
       States.IDLE,
-      new PlayerAnimation(5, "assets/Char 2/with hands/idle_")
+      new PlayerAnimation(5, "assets/Char 2/no hands/idle_")
     );
     this.animations.set(
       States.RUN,
-      new PlayerAnimation(7, "assets/Char 2/with hands/walk_")
+      new PlayerAnimation(7, "assets/Char 2/no hands/walk_")
     );
     this.animations.set(
       States.JUMPSTART,
-      new PlayerAnimation(1, "assets/Char 2/with hands/jumpStart_")
+      new PlayerAnimation(1, "assets/Char 2/no hands/jumpStart_")
     );
     this.animations.set(
       States.JUMPEND,
-      new PlayerAnimation(2, "assets/Char 2/with hands/jumpEnd_")
+      new PlayerAnimation(2, "assets/Char 2/no hands/jumpEnd_")
     );
     this.animations.set(
       States.FALL,
-      new PlayerAnimation(4, "assets/Char 2/with hands/fall_")
+      new PlayerAnimation(4, "assets/Char 2/no hands/fall_")
     );
     this.animations.set(
       States.ROLL,
-      new PlayerAnimation(4, "assets/Char 2/with hands/roll_")
+      new PlayerAnimation(4, "assets/Char 2/no hands/roll_")
     );
     this.animations.set(States.HIT,
-    new PlayerAnimation(2,"assets/Char 2/with hands/hit_"));
+    new PlayerAnimation(2,"assets/Char 2/no hands/hit_"));
   }
 }

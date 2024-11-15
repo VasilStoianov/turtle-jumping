@@ -1,10 +1,10 @@
-import  {Enemy}  from "./Enemy.js";
-import { Bullet } from "./bullet.js";
-import { Player } from "./player.js";
-import { Assets } from "./assets.js";
-import { Vector2D } from "./vector2d.js";
-import { States } from "./states.js";
-import { Level } from "./level.js";
+import {Assets} from "./assets.js";
+import {Bullet} from "./bullet.js";
+import {Enemy} from "./Enemy.js";
+import {Level} from "./level.js";
+import {Player} from "./player.js";
+import {States} from "./states.js";
+import {Vector2D} from "./vector2d.js";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const game = canvas.getContext("2d");
@@ -23,9 +23,7 @@ const ArrowUp: string = "ArrowUp";
 const ArrowDown: string = "Arrowdown";
 const space: string = " ";
 
-window.onkeydown = (event) => {
-  player.keys.add(event.key);
-};
+window.onkeydown = (event) => { player.keys.add(event.key); };
 
 function handleKeyEvents() {
   if (player.keys.has(ArrowRight)) {
@@ -59,13 +57,10 @@ function handleKeyEvents() {
   if (player.keys.has(space)) {
     if (addBullet) {
       addBullet = false;
-      let img = new Bullet(
-        "assets/bullet.png",
-        new Vector2D(
-          (weapon.position.x + 105) * player.scale,
-          weapon.position.y + 12
-        )
-      );
+      let img =
+          new Bullet("assets/bullet.png",
+                     new Vector2D((weapon.position.x + 105) * player.scale,
+                                  weapon.position.y + 12));
       img.velocity *= player.scale;
       bullets.push(img);
     }
@@ -80,41 +75,36 @@ function handleKeyEvents() {
 
 window.onkeyup = (e) => {
   switch (e.key) {
-    case "ArrowLeft": {
-      player.walking = false;
-      player.state = States.IDLE;
-      player.keys.delete(ArrowLeft);
-      break;
-    }
-    case "ArrowRight": {
-      player.walking = false;
-      player.state = States.IDLE;
-      player.keys.delete(ArrowRight);
-      break;
-    }
-    case "ArrowDown": {
-      player.state = States.IDLE;
-      player.keys.delete(ArrowDown);
-
-      break;
-    }
-    default:
-      player.keys.delete(e.key);
+  case ArrowLeft: {
+    player.walking = false;
+    player.state = States.IDLE;
+    player.keys.delete(ArrowLeft);
+    break;
+  }
+  case ArrowRight: {
+    player.walking = false;
+    player.state = States.IDLE;
+    player.keys.delete(ArrowRight);
+    break;
+  }
+  case ArrowDown: {
+    player.state = States.IDLE;
+    player.keys.delete(ArrowDown);
+    break;
+  }
+  default:
+    player.keys.delete(e.key);
   }
 };
 
-function handleEnemyMovement(
-  enemies: Enemy[],
-  game: CanvasRenderingContext2D | null
-) {
+function handleEnemyMovement(enemies: Enemy[],
+                             game: CanvasRenderingContext2D|null) {
   if (game) {
-    enemies.forEach((enemy) => {
-      enemy.x -= enemy.vy;
-    });
+    enemies.forEach((enemy) => { enemy.x -= enemy.vy; });
   }
 }
 
-function handleMovement(player: Player, game: CanvasRenderingContext2D | null) {
+function handleMovement(player: Player, game: CanvasRenderingContext2D|null) {
   if (game) {
     if (player.walking && player.scale == 1) {
       player.state = player.state === States.ROLL ? States.ROLL : States.RUN;
@@ -141,28 +131,28 @@ function handleEnemyAnimation(enemies: Enemy[]) {
       }
 
       switch (enemy.state) {
-        case States.RUN: {
-          drawEnemy(enemy, States.RUN, game, x);
-          break;
-        }
+      case States.RUN: {
+        drawEnemy(enemy, States.RUN, game, x);
+        break;
+      }
 
-        case States.HIT: {
-          drawEnemy(enemy, States.HIT, game, x);
-          break;
-        }
-        case States.JUMPEND: {
-          drawEnemy(enemy, States.JUMPEND, game, x);
-          player.state = States.IDLE;
-          break;
-        }
-        case States.IDLE: {
-          drawEnemy(enemy, States.IDLE, game, x);
-          break;
-        }
-        case States.DEATH: {
-          drawEnemy(enemy, States.DEATH, game, x);
-          break;
-        }
+      case States.HIT: {
+        drawEnemy(enemy, States.HIT, game, x);
+        break;
+      }
+      case States.JUMPEND: {
+        drawEnemy(enemy, States.JUMPEND, game, x);
+        player.state = States.IDLE;
+        break;
+      }
+      case States.IDLE: {
+        drawEnemy(enemy, States.IDLE, game, x);
+        break;
+      }
+      case States.DEATH: {
+        drawEnemy(enemy, States.DEATH, game, x);
+        break;
+      }
       }
     } else {
       enemies.splice(index, 1);
@@ -180,35 +170,35 @@ function handleAnimation(player: Player) {
     }
 
     switch (player.state) {
-      case States.RUN: {
-        drawPlayer(States.RUN, game,player,x);
-        break;
-      }
+    case States.RUN: {
+      drawPlayer(States.RUN, game, player, x);
+      break;
+    }
 
-      case States.JUMPSTART: {
-        drawPlayer(States.JUMPSTART, game,player, x);
-        break;
-      }
-      case States.JUMPEND: {
-        drawPlayer(States.JUMPEND, game,player, x);
-        player.state = States.IDLE;
-        break;
-      }
-      case States.IDLE: {
-       drawPlayer(States.IDLE, game,player, x);
-        break;
-      }
-      case States.FALL: {
-        drawPlayer(States.FALL, game, player,x);
-        break;
-      }
-      case States.ROLL: {
-        drawPlayer(States.ROLL, game,player, x);
-        break;
-      }
-      case States.HIT: {
-        drawPlayer(States.HIT,game,player,x);
-      }
+    case States.JUMPSTART: {
+      drawPlayer(States.JUMPSTART, game, player, x);
+      break;
+    }
+    case States.JUMPEND: {
+      drawPlayer(States.JUMPEND, game, player, x);
+      player.state = States.IDLE;
+      break;
+    }
+    case States.IDLE: {
+      drawPlayer(States.IDLE, game, player, x);
+      break;
+    }
+    case States.FALL: {
+      drawPlayer(States.FALL, game, player, x);
+      break;
+    }
+    case States.ROLL: {
+      drawPlayer(States.ROLL, game, player, x);
+      break;
+    }
+    case States.HIT: {
+      drawPlayer(States.HIT, game, player, x);
+    }
     }
   }
 }
@@ -219,50 +209,27 @@ function drawBullets() {
       bullets.splice(index, 1);
     } else {
       if (bullet.isFirstShot) {
-        let firshot = new Assets(
-          "assets/muzzle.png",
-          { width: 128, heidth: 128 },
-          bullet.position
-        );
+        let firshot = new Assets("assets/muzzle.png",
+                                 {width : 128, heidth : 128}, bullet.position);
         game?.save();
         game?.scale(player.scale, 1);
-        game?.drawImage(
-          firshot.asset,
-          0,
-          0,
-          bullet.size.width,
-          bullet.size.heidth,
-          (bullet.position.x + 12) * player.scale,
-          bullet.position.y - 17,
-          64,
-          64
-        );
+        game?.drawImage(firshot.asset, 0, 0, bullet.size.width,
+                        bullet.size.heidth,
+                        (bullet.position.x + 12) * player.scale,
+                        bullet.position.y - 17, 64, 64);
         bullet.isFirstShot = false;
         game?.restore();
       }
       bullet.position.x += bullet.velocity;
       bullet.end += 10;
-      game?.drawImage(
-        bullet.asset,
-        0,
-        0,
-        bullet.size.width,
-        bullet.size.heidth,
-        bullet.position.x,
-        bullet.position.y,
-        10,
-        10
-      );
+      game?.drawImage(bullet.asset, 0, 0, bullet.size.width, bullet.size.heidth,
+                      bullet.position.x, bullet.position.y, 10, 10);
     }
   });
 }
 
-function drawEnemy(
-  enemy: Enemy,
-  state: States,
-  game: CanvasRenderingContext2D,
-  x: number
-) {
+function drawEnemy(enemy: Enemy, state: States, game: CanvasRenderingContext2D,
+                   x: number) {
   game.save();
   game.scale(enemy.scale, 1);
   if (!(enemy.healtBar.width < 0)) {
@@ -275,26 +242,15 @@ function drawEnemy(
     let pos = Math.floor((gameFrame / stagFrames) % idleAnim.frames);
     let img = idleAnim.images[pos];
     if (img) {
-      game.drawImage(
-        img,
-        720,
-        980,
-        650,
-        750,
-        x,
-        enemy.y,
-        enemy.width,
-        enemy.height
-      );
+      game.drawImage(img, 720, 1000, 650, 820, x, enemy.y, enemy.width,
+                     enemy.height);
       game.restore();
       idleAnim.currentFrame++;
       if (idleAnim.currentFrame > idleAnim.frames) {
         if (enemy.state === States.DEATH) {
           enemy.forRemoval = true;
-        } else if (
-          idleAnim.currentFrame > idleAnim.frames &&
-          enemy.state === States.HIT
-        ) {
+        } else if (idleAnim.currentFrame > idleAnim.frames &&
+                   enemy.state === States.HIT) {
           enemy.state = States.RUN;
         }
 
@@ -303,53 +259,37 @@ function drawEnemy(
     }
   }
 }
-function drawPlayer(
-  state: States,
-  game: CanvasRenderingContext2D,
-  player: Player,
-  x: number
-) {
+function drawPlayer(state: States, game: CanvasRenderingContext2D,
+                    player: Player, x: number) {
   let idleAnim = player.animations.get(state);
   if (idleAnim) {
     let pos = Math.floor((gameFrame / stagFrames) % idleAnim.frames);
     game.font = "24px serif";
     game.fillStyle = "grey";
-    game.fillText("Health:", 100,50);
-    game.fillStyle = 'red';
-    game.fillText(player.health.toString(),175,50);
+    game.fillText("Health:", 100, 50);
+    game.fillStyle = "red";
+    game.fillText(player.health.toString(), 175, 50);
     let img = idleAnim.images[pos];
     if (img) {
       game.save();
       game.scale(player.scale, 1);
-    
-      game.drawImage(
-        img,
-        720,
-        1060,
-        650,
-        750,
-        x,
-        player.y,
-        player.width,
-        player.height
-      );
+
+      game.drawImage(img, 720, 1060, 650, 750, x, player.y, player.width,
+                     player.height);
       game.restore();
       idleAnim.currentFrame++;
-      if (idleAnim.currentFrame > idleAnim.frames) 
-        {
-          if(player.state === States.HIT && !player.walking) {
-            player.state = States.IDLE
-            timeCol = false;
-          
-          }
-            idleAnim.currentFrame = 0;
-         
+      if (idleAnim.currentFrame > idleAnim.frames) {
+        if (player.state === States.HIT && !player.walking) {
+          player.state = States.IDLE;
+          timeCol = false;
         }
-        }
+        idleAnim.currentFrame = 0;
+      }
+    }
   }
 }
 
-function loadLevel(game: CanvasRenderingContext2D | null) {
+function loadLevel(game: CanvasRenderingContext2D|null) {
   if (game) {
     game.drawImage(level.background_image.img, 0, 0);
     for (let x = 0; x < GAME_WIDTH / 128; x++) {
@@ -377,56 +317,54 @@ function applyEnemyGravity(enemies: Enemy[]) {
   });
 }
 
-function handleCollisionEnemy(enemy: Enemy, level: Level,player: Player,timeCol: boolean) {
-  var collision: boolean = false;
+function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player,
+                              timeCol: boolean) {
   for (let x = 0; x < level.blocks.length; x++) {
     var image = level.blocks[x];
-    if (
-      image &&
-      enemy.y + enemy.height >= image.position.y &&
-      enemy.x + enemy.width <= image.position.x + image.size.width / 2
-    ) {
+    if (image && enemy.y + enemy.height >= image.position.y &&
+        enemy.x + enemy.width <= image.position.x + image.size.width / 2) {
       enemy.onGround = true;
       enemy.weigth = 0;
-      collision = true;
       enemy.y = image.position.y - enemy.height;
     }
   }
-    
 
   for (let x = 0; x < bullets.length; x++) {
     let bullet = bullets[x];
     if (bullet) {
-      if (
-        (bullet.position.x >= enemy.x &&
-          bullet.position.x <= enemy.x + enemy.width &&
-          bullet.position.y >= enemy.y &&
-          bullet.position.y <= enemy.y + enemy.height) ||
-        (bullet.position.x <= enemy.x + enemy.width &&
-          bullet.position.x >= enemy.x &&
-          bullet.position.y >= enemy.y &&
-          bullet.position.y <= enemy.y + enemy.height)
-      ) {
-       
+      if ((bullet.position.x >= enemy.x &&
+           bullet.position.x <= enemy.x + enemy.width &&
+           bullet.position.y >= enemy.y &&
+           bullet.position.y <= enemy.y + enemy.height) ||
+          (bullet.position.x <= enemy.x + enemy.width &&
+           bullet.position.x >= enemy.x && bullet.position.y >= enemy.y &&
+           bullet.position.y <= enemy.y + enemy.height)) {
         bullets.splice(x, 1);
         enemy.state = States.HIT;
         enemy.health -= 8;
         enemy.healtBar.width -= 8;
         console.log(enemy.healtBar.width);
-        if (enemy.health <= 0) enemy.state = States.DEATH;
+        if (enemy.health <= 0) {
+          enemy.state = States.DEATH;
+          enemy.isDead = true;
+        }
       }
     }
   }
 
-if((player.x + player.width >= enemy.x  && 
-      player.x <= enemy.x && player.y >= enemy.y &&
-       player.y + player.height >= enemy.y + enemy.height ) && timeCol){
-      player.health -= 2;
-      player.healtBar.width = player.health;
-      timeCol = false;
-      player.state = States.HIT;
-      if(player.health <=0) player.isDead = true;
-    }
+  if (player.x + player.width >= enemy.x && player.x <= enemy.x &&
+      player.y >= enemy.y &&
+      player.y + player.height >= enemy.y + enemy.height && !enemy.isDead) {
+     let currentTime = Date.now();   
+    if( currentTime - level.lastCollide >= 1000){
+      level.lastCollide = currentTime;
+        player.health -= 2;
+    player.healtBar.width = player.health;
+    player.state = States.HIT;
+    if (player.health <= 0)
+      player.isDead = true;
+  }
+}
   if (enemy.x + enemy.width >= GAME_WIDTH) {
     enemy.x = GAME_WIDTH - enemy.width;
   }
@@ -437,23 +375,20 @@ if((player.x + player.width >= enemy.x  &&
     enemy.x = 0;
   }
 
-  return collision;
 }
 
 function handleCollision(player: Player, level: Level) {
   var collision: boolean = false;
   for (let x = 0; x < level.blocks.length; x++) {
     var image = level.blocks[x];
-    if (
-      image &&
-      player.y + player.height >= image.position.y &&
-      player.x + player.width <= image.position.x + image.size.width / 2
-    ) {
+    if (image && player.y + player.height >= image.position.y &&
+        player.x + player.width <= image.position.x + image.size.width / 2) {
       player.onGround = true;
       player.weigth = 0;
       collision = true;
       player.y = image.position.y - player.height;
-      if (player.state === States.FALL) player.state = States.IDLE;
+      if (player.state === States.FALL)
+        player.state = States.IDLE;
     }
   }
   if (player.x + player.width >= GAME_WIDTH) {
@@ -469,11 +404,8 @@ function handleCollision(player: Player, level: Level) {
   return collision;
 }
 
-let weapon = new Assets(
-  "assets/test2.png",
-  { width: 128, heidth: 128 },
-  new Vector2D(300, 400)
-);
+let weapon = new Assets("assets/test2.png", {width : 128, heidth : 128},
+                        new Vector2D(300, 400));
 
 function drawWeapon() {
   game?.save();
@@ -482,18 +414,21 @@ function drawWeapon() {
   weapon.position.x -= 25;
   weapon.position.y = player.y + player.height / 2;
   game?.drawImage(weapon.asset, weapon.position.x, weapon.position.y);
+  let hand = new Image();
+  hand.src = '../assets/handR1/idle_0.png';
+  game?.drawImage(hand,775,1550,150,150,weapon.position.x,weapon.position.y+15 ,32,32);
   game?.restore();
+
 }
 
-let time =performance.now();
-let bulletTime = performance.now();
-let hitTime = performance.now();
-//let enemiesToAdd = true;
+let time = Date.now();
+let bulletTime = Date.now();
+let hitTime = Date.now();
+// let enemiesToAdd = true;
 let enemiesCreated = 0;
 let timeCol = false;
 function mainLoop(timestamp: number) {
-  
-
+  let currentTime = Date.now();
   if (player.isDead && game) {
     loadLevel(game);
     game.font = "48px serif";
@@ -501,20 +436,13 @@ function mainLoop(timestamp: number) {
     game.fillText("DEAD! GAME OVER!", GAME_WIDTH / 2.5, GAME_HEIGH / 2);
     requestAnimationFrame(mainLoop);
   } else {
-    if (timestamp - bulletTime >= 200) {
+    if (currentTime - bulletTime >= 200) {
       addBullet = true;
-      bulletTime = timestamp;
+      bulletTime = currentTime;
     }
-    if(timestamp - hitTime >= 3200) 
-      {
-        hitTime = timestamp;
-        timeCol = true;
-
-      
-      }
-        if (timestamp - time >= 2500 && enemiesCreated <= 12) {
+        if (currentTime - time >= 2500 && enemiesCreated <= 12) {
       enemies.push(new Enemy());
-      time = timestamp;
+      time = currentTime;
       enemiesCreated++;
     }
     handleKeyEvents();
@@ -524,9 +452,8 @@ function mainLoop(timestamp: number) {
     applyEnemyGravity(enemies);
 
     handleCollision(player, level);
-    enemies.forEach((enemy) => {
-      handleCollisionEnemy(enemy, level,player,timeCol);
-    });
+    enemies.forEach(
+        (enemy) => { handleCollisionEnemy(enemy, level, player, timeCol); });
     loadLevel(game);
     handleAnimation(player);
     drawWeapon();

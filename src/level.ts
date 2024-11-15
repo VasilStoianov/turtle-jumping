@@ -4,6 +4,7 @@ import { GAME_HEIGH,GAME_WIDTH } from "./game.js";
 
 export class Level {
   blocks: Assets[];
+  lastCollide: number;
   background_image: {
     img: HTMLImageElement;
     width: number;
@@ -12,6 +13,7 @@ export class Level {
   };
 
   constructor(src: string) {
+    this.lastCollide = 0;
     this.blocks = [];
     for (let x = 0; x <= GAME_WIDTH / 128; x++) {
       let block = new Assets(
