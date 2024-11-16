@@ -17,6 +17,7 @@ healtBar: {
 
   health: number;
   onGround: boolean = true;
+  isHit: boolean = false;
   vy: number = 20;
   weigth: number = 0;
   state: States;
@@ -39,29 +40,29 @@ healtBar: {
     this.animations = new Map<States, PlayerAnimation>();
     this.animations.set(
       States.IDLE,
-      new PlayerAnimation(5, "assets/Char 2/no hands/idle_")
+      new PlayerAnimation(5, "assets/Char 2/no hands/idle_",350,false)
     );
     this.animations.set(
       States.RUN,
-      new PlayerAnimation(7, "assets/Char 2/no hands/walk_")
+      new PlayerAnimation(7, "assets/Char 2/no hands/walk_",100,false)
     );
     this.animations.set(
       States.JUMPSTART,
-      new PlayerAnimation(1, "assets/Char 2/no hands/jumpStart_")
+      new PlayerAnimation(1, "assets/Char 2/no hands/jumpStart_",400,false)
     );
     this.animations.set(
       States.JUMPEND,
-      new PlayerAnimation(2, "assets/Char 2/no hands/jumpEnd_")
+      new PlayerAnimation(2, "assets/Char 2/no hands/jumpEnd_",400,true)
     );
     this.animations.set(
       States.FALL,
-      new PlayerAnimation(4, "assets/Char 2/no hands/fall_")
+      new PlayerAnimation(4, "assets/Char 2/no hands/fall_",300,false)
     );
     this.animations.set(
       States.ROLL,
-      new PlayerAnimation(4, "assets/Char 2/no hands/roll_")
+      new PlayerAnimation(4, "assets/Char 2/no hands/roll_",300,false)
     );
     this.animations.set(States.HIT,
-    new PlayerAnimation(2,"assets/Char 2/no hands/hit_"));
+    new PlayerAnimation(2,"assets/Char 2/no hands/hit_",400,true));
   }
 }

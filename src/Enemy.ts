@@ -39,15 +39,15 @@ export class Enemy {
     this.animations = new Map<States, PlayerAnimation>();
     this.animations.set(
       States.RUN,
-      new PlayerAnimation(7, "assets/Enemies/Enemy 1/walk_")
+      new PlayerAnimation(7, "assets/Enemies/Enemy 1/walk_",100,false)
     );
     this.animations.set(
       States.HIT,
-      new PlayerAnimation(2, "assets/Enemies/Enemy 1/hit_")
+      new PlayerAnimation(2, "assets/Enemies/Enemy 1/hit_",250,true)
     );
     this.animations.set(
       States.DEATH,
-      new PlayerAnimation(9, "assets/Enemies/Enemy 1/death_")
+      new PlayerAnimation(9, "assets/Enemies/Enemy 1/death_",100,false)
     );
   }
 }

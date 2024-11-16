@@ -10,12 +10,11 @@ export class Bullet {
   position: Vector2D;
   end: number;
   isFirstShot: boolean;
-  constructor(src: string, position: Vector2D) {
-    this.asset = new Image(60, 60);
+  constructor(asset: HTMLImageElement, position: Vector2D) {
+    this.asset = asset;
     this.velocity = 10;
     this.end = 0;
     this.isFirstShot = true;
-    this.asset.src = src;
     this.size = {
       width: 128,
 
