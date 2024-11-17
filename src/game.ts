@@ -96,7 +96,9 @@ window.onkeyup = (e) => {
 function handleEnemyMovement(enemies: Enemy[],
                              game: CanvasRenderingContext2D|null) {
   if (game) {
-    enemies.forEach((enemy) => { enemy.x -= enemy.vy; });
+    enemies.forEach((enemy) => { 
+      enemy.x += enemy.vy * enemy.scale; 
+    });
   }
 }
 
@@ -249,7 +251,7 @@ function drawEnemy(enemy: Enemy, state: States, game: CanvasRenderingContext2D,
           if (idleAnim.currentFrame > idleAnim.frames) {
         if (enemy.state === States.DEATH) {
           enemy.forRemoval = true;
-        } else if (idleAnim.currentFrame > idleAnim.frames &&
+        }  if (idleAnim.currentFrame > idleAnim.frames &&
                    enemy.state === States.HIT) {
           enemy.state = States.RUN;
         }
@@ -276,7 +278,7 @@ function drawPlayer(state: States, game: CanvasRenderingContext2D,
       game.save();
       game.scale(player.scale, 1);
 
-      game.drawImage(img, 720, 1060, 650, 750, x, player.y, player.width,
+      game.drawImage(img, 690, 1040, 690, 790, x, player.y, player.width,
                      player.height);
       game.restore();
        if(  currentTime-idleAnim.elapsedTime  >= idleAnim.latency) 
@@ -288,6 +290,9 @@ function drawPlayer(state: States, game: CanvasRenderingContext2D,
         if (player.state === States.HIT && !player.walking) {
           player.isHit = false;
           player.state = States.IDLE;
+        } else if (player.state === States.HIT && player.walking) {
+          player.isHit = false;
+          player.state = States.RUN;
         }
         idleAnim.currentFrame = 0;
       }
@@ -298,7 +303,7 @@ function drawPlayer(state: States, game: CanvasRenderingContext2D,
 function loadLevel(game: CanvasRenderingContext2D|null) {
   if (game) {
     game.drawImage(level.background_image.img, 0, 0);
-    for (let x = 0; x < GAME_WIDTH / 128; x++) {
+    for (let x = 0; x <= level.blocks.length; x++) {
       let image = level.blocks[x];
       if (image) {
         game.beginPath();
@@ -328,7 +333,7 @@ function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player,
   for (let x = 0; x < level.blocks.length; x++) {
     var image = level.blocks[x];
     if (image && enemy.y + enemy.height >= image.position.y &&
-        enemy.x + enemy.width <= image.position.x + image.size.width / 2) {
+        enemy.x + enemy.width <= image.position.x + image.size.width) {
       enemy.onGround = true;
       enemy.weigth = 0;
       enemy.y = image.position.y - enemy.height;
@@ -372,22 +377,22 @@ function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player,
   }
 }
   if (enemy.x + enemy.width >= GAME_WIDTH) {
-    enemy.x = GAME_WIDTH - enemy.width;
+    enemy.scale = -1;
   }
   if (enemy.y + enemy.height >= GAME_HEIGH) {
     enemy.isDead = true;
   }
   if (enemy.x <= 0) {
-    enemy.x = 0;
+    enemy.scale = 1;
   }
 
 }
 
 function handleCollision(player: Player, level: Level) {
-  for (let x = 0; x < level.blocks.length; x++) {
+  for (let x = 0; x <= level.blocks.length; x++) {
     var image = level.blocks[x];
     if (image && player.y + player.height >= image.position.y &&
-        player.x + player.width <= image.position.x + image.size.width / 2) {
+        player.x + player.width <= image.position.x + image.size.width ) {
       player.onGround = true;
       player.weigth = 0;
       player.y = image.position.y - player.height;
@@ -456,7 +461,6 @@ function mainLoop() {
     handleEnemyMovement(enemies, game);
     applyPlayerGravity(player);
     applyEnemyGravity(enemies);
-
     handleCollision(player, level);
     enemies.forEach(
         (enemy) => { handleCollisionEnemy(enemy, level, player, timeCol); });
