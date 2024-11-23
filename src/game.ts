@@ -25,7 +25,8 @@ const ArrowUp: string = "ArrowUp";
 const ArrowDown: string = "ArrowDown";
 const space: string = " ";
 
-window.onkeydown = (event) => { player.keys.add(event.key); };
+window.onkeydown = (event) => { 
+  player.keys.add(event.key); };
 
 function handleKeyEvents(player: Player, game: CanvasRenderingContext2D|null ) {
   if (player.keys.has(ArrowRight)) {
@@ -60,6 +61,7 @@ function handleKeyEvents(player: Player, game: CanvasRenderingContext2D|null ) {
       bullets.push(img);
     }
   }
+  
   if (player.keys.has("r")) {
     if (player.isDead) {
       player = new Player();
@@ -67,7 +69,6 @@ function handleKeyEvents(player: Player, game: CanvasRenderingContext2D|null ) {
     }
   }
 }
-
 window.onkeyup = (e) => {
   switch (e.key) {
   case ArrowLeft: {
@@ -87,6 +88,7 @@ window.onkeyup = (e) => {
     player.keys.delete(ArrowDown);
     break;
   }
+  
 
   default:
     player.keys.delete(e.key);
@@ -97,6 +99,8 @@ function handleEnemyMovement(enemies: Enemy[],
                              game: CanvasRenderingContext2D|null) {
   if (game) {
     enemies.forEach((enemy) => { 
+      if(enemy.state != States.HIT) 
+        enemy.vy = enemy.speed;
       enemy.x += enemy.vy * enemy.scale; 
     });
   }
@@ -328,12 +332,16 @@ function applyEnemyGravity(enemies: Enemy[]) {
   });
 }
 
-function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player,
-                              timeCol: boolean) {
+function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player){
+if (enemy.health <= 0) {
+          enemy.state = States.DEATH;
+          enemy.isDead = true;
+         return;
+        }
   for (let x = 0; x < level.blocks.length; x++) {
     var image = level.blocks[x];
     if (image && enemy.y + enemy.height >= image.position.y &&
-        enemy.x + enemy.width <= image.position.x + image.size.width) {
+        enemy.x + enemy.width <= image.position.x + image.size.width ) {
       enemy.onGround = true;
       enemy.weigth = 0;
       enemy.y = image.position.y - enemy.height;
@@ -346,18 +354,16 @@ function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player,
       if ((bullet.position.x >= enemy.x &&
            bullet.position.x <= enemy.x + enemy.width &&
            bullet.position.y >= enemy.y &&
-           bullet.position.y <= enemy.y + enemy.height) ||
+           bullet.position.y <= enemy.y + enemy.height && !enemy.isDead ) ||
           (bullet.position.x <= enemy.x + enemy.width &&
            bullet.position.x >= enemy.x && bullet.position.y >= enemy.y &&
-           bullet.position.y <= enemy.y + enemy.height)) {
+           bullet.position.y <= enemy.y + enemy.height && !enemy.isDead)) {
+
         bullets.splice(x, 1);
         enemy.state = States.HIT;
         enemy.health -= 8;
         enemy.healtBar.width -= 8;
-        if (enemy.health <= 0) {
-          enemy.state = States.DEATH;
-          enemy.isDead = true;
-        }
+        
       }
     }
   }
@@ -365,16 +371,28 @@ function handleCollisionEnemy(enemy: Enemy, level: Level, player: Player,
   if (player.x + player.width >= enemy.x && player.x <= enemy.x &&
       player.y >= enemy.y &&
       player.y + player.height >= enemy.y + enemy.height && !enemy.isDead) {
-     let currentTime = Date.now();   
-    if( currentTime - level.lastCollide >= 1000){
-      level.lastCollide = currentTime;
-        player.health -= 2;
+     
+       let currentTime = Date.now();   
+    if( currentTime - enemy.lastCollide >= 1000){
+      if(player.state === States.ROLL){
+       enemy.state = States.HIT;
+         enemy.x -= 50 *enemy.scale;
+         enemy.y -= 40;    
+         enemy.vy = 0;
+         enemy.health -= 40;
+         enemy.healtBar.width -= 40;
+      }else {
+        player.health -= 10;
     player.healtBar.width = player.health;
     player.state = States.HIT;
     player.isHit = true;
     if (player.health <= 0)
       player.isDead = true;
+    }
+
+      enemy.lastCollide = currentTime;
   }
+
 }
   if (enemy.x + enemy.width >= GAME_WIDTH) {
     enemy.scale = -1;
@@ -411,30 +429,42 @@ function handleCollision(player: Player, level: Level) {
   }
 
 }
+ let mouseX = 650;
+  let mouseY = 750;
+canvas.addEventListener('click', (event) => {
+  // Mouse position relative to the canvas
+console.log(event);
+});
 
-let weapon = new Assets("assets/test2.png", {width : 128, heidth : 128},
+const weapon = new Assets("assets/test2.png", {width : 128, heidth : 128},
                         new Vector2D(300, 400));
 
 function drawWeapon() {
+  // Save the canvas state
   game?.save();
-  game?.scale(player.scale, 1);
-  weapon.position.x = (player.x + player.width / 2) * player.scale;
-  weapon.position.x -= 25;
+
+  // Adjust for player's scale
+ let handL = new Image();
+  handL.src = '../assets/handR1/idle_0.png';
+
+   game?.scale(player.scale,1);
+ 
+   game?.drawImage(handL, 755, 1565, 170, 170, (weapon.position.x  +25), weapon.position.y + 20, 32, 32);
+  weapon.position.x = (player.x + player.width/ 2 ) * player.scale;
   weapon.position.y = player.y + player.height / 2;
-  game?.drawImage(weapon.asset, weapon.position.x, weapon.position.y);
+
+  game?.drawImage(weapon.asset,weapon.position.x-25,weapon.position.y ); // Offset by half the weapon size
+
+
   let hand = new Image();
   hand.src = '../assets/handR1/idle_0.png';
-  game?.drawImage(hand,775,1550,150,150,weapon.position.x-10,weapon.position.y+12 ,32,32);
+  game?.drawImage(hand, 755, 1565, 170, 170, (weapon.position.x - 30), weapon.position.y + 21, 32, 32);
   game?.restore();
-
 }
 
 let time = Date.now();
 let bulletTime = Date.now();
-let animTime = Date.now();
-// let enemiesToAdd = true;
 let enemiesCreated = 0;
-let timeCol = false;
 
 
 
@@ -463,7 +493,7 @@ function mainLoop() {
     applyEnemyGravity(enemies);
     handleCollision(player, level);
     enemies.forEach(
-        (enemy) => { handleCollisionEnemy(enemy, level, player, timeCol); });
+        (enemy) => { handleCollisionEnemy(enemy, level, player); });
     loadLevel(game);
     handleAnimation(player,currentTime);
     drawWeapon();
@@ -471,7 +501,6 @@ function mainLoop() {
     handleEnemyAnimation(enemies,currentTime);
     gameFrame++;
     requestAnimationFrame(mainLoop);
-    animTime = currentTime;
   }
 }
 

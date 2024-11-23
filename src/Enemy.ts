@@ -11,6 +11,8 @@ export class Enemy {
     width: number;
     heidth: number;
   };
+
+  lastCollide: number;
   speed: number = 6;
   maxSpeed: number;
   onGround: boolean = true;
@@ -21,10 +23,12 @@ export class Enemy {
   isDead: boolean;
   forRemoval: boolean = false;
   constructor() {
+    this.lastCollide = 0;
     this.isDead = false;
     let rand = Math.random() * (3 - 1 + 1) + 1;
     this.x = 1900 - 200;
     this.vy *= Math.floor(rand);
+    this.speed = this.vy;
     this.y = 255;
     this.maxSpeed = 100;
     this.width = 100;
