@@ -5,8 +5,10 @@ export class PlayerAnimation {
   latency: number;
   elapsedTime: number;
   loop: boolean;
-  constructor(frames: number, src: string,latency: number,loop: boolean) {
+  stagFrames:number;;
+  constructor(frames: number, src: string,latency: number,loop: boolean,stageFrames: number) {
     this.images = [];
+    this.stagFrames = stageFrames;
     this.frames = frames;
     this.latency = latency;
     this.elapsedTime = Date.now();

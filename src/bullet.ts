@@ -12,7 +12,7 @@ export class Bullet {
   isFirstShot: boolean;
   constructor(asset: HTMLImageElement, position: Vector2D) {
     this.asset = asset;
-    this.velocity = 10;
+    this.velocity = 20;
     this.end = 0;
     this.isFirstShot = true;
     this.size = {

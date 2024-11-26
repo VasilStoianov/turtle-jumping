@@ -11,7 +11,7 @@ export class Enemy {
     width: number;
     heidth: number;
   };
-
+  rolled: boolean = false;
   lastCollide: number;
   speed: number = 6;
   maxSpeed: number;
@@ -43,15 +43,15 @@ export class Enemy {
     this.animations = new Map<States, PlayerAnimation>();
     this.animations.set(
       States.RUN,
-      new PlayerAnimation(7, "assets/Enemies/Enemy 1/walk_",100,false)
+      new PlayerAnimation(7, "assets/Enemies/Enemy 1/walk_",100,false,7)
     );
     this.animations.set(
       States.HIT,
-      new PlayerAnimation(2, "assets/Enemies/Enemy 1/hit_",250,true)
+      new PlayerAnimation(2, "assets/Enemies/Enemy 1/hit_",250,true,7)
     );
     this.animations.set(
       States.DEATH,
-      new PlayerAnimation(9, "assets/Enemies/Enemy 1/death_",100,false)
+      new PlayerAnimation(9, "assets/Enemies/Enemy 1/death_",100,false,7)
     );
   }
 }
